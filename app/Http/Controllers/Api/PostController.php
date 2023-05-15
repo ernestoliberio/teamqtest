@@ -72,6 +72,6 @@ class PostController extends Controller
     {
         $post->delete();
 
-        return response(null, 204);
+        return response(null, \Symfony\Component\HttpFoundation\Response::HTTP_NO_CONTENT);
     }
 }
