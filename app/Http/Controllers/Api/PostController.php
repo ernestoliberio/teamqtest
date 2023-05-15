@@ -18,7 +18,9 @@ class PostController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-
+        /*
+            $datos=json_encode([]);
+        */
         $posts = Post::all();
         return PostResource::collection($posts);
     }
