@@ -25,10 +25,19 @@ jobs:
             -Dsonar.language=php
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
-      - name: Check SonarQube analysis result
+
+      - name: Check SonarQube Quality Gate
+        id: sonarqube-quality-gate
+        uses: sonarsource/sonarqube-quality-gate-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectKey: teamqtest
+          waitForQualityGate: 'true'
+
+      - name: Check if Quality Gate passed
         run: |
-          analysis=$(grep "ANALYSIS SUCCESSFUL" .scannerwork/report-task.txt || true)
-          if [[ -z "$analysis" ]]; then
-            echo "SonarQube analysis failed. Check SonarQube dashboard for more information."
+          if [ ${{ steps.sonarqube-quality-gate.outputs.status }} != 'passed' ]; then
+            echo "Quality Gate check failed. Blocking pull request. SonarQube analysis failed. Check SonarQube dashboard for more information"
             exit 1
           fi
