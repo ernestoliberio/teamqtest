@@ -27,20 +27,9 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
 
-      - name: Get SonarQube Issues
-        id: sonarqube-issues
-        run: |
-          curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }}/api/issues/search?resolved=false&statuses=OPEN&id=teamqtest" --output issues.json
-
-      - name: Check if SonarQube Issues
-        id: check-sonarqube-issues
-        run: |
-          cat issues.json | jq -e 'if .issues then (if .issues | length > 0 then true else false end) else false end' > /dev/null
-          echo "::set-output name=hasIssues::$?"
-
-      - name: Block Pull Request if SonarQube Issues
-        run: |
-          if [ "${{ steps.check-sonarqube-issues.outputs.hasIssues }}" = "true" ]; then
-            echo "There are SonarQube issues. Blocking pull request."
-            exit 1
-          fi
+      - name: Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
