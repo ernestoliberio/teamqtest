@@ -33,3 +33,15 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Check SonarQube Issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          issues=$(curl -s -u $SONAR_TOKEN: '${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&s=CREATION_DATE&resolved=false&ps=1' | jq '.total')
+          if [[ $issues -gt 0 ]]; then
+            echo "There are $issues open issues in SonarQube. Blocking the workflow."
+            exit 1
+          else
+            echo "No open issues found in SonarQube. Continuing the workflow."
+          fi
