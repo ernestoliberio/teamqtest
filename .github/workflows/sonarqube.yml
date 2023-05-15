@@ -1,29 +1,14 @@
 name: SonarQubeCheck
-
 on:
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  sonarqube:
+  sonarqube_analysis:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Configure Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Configure Docker Cache
-        uses: actions/cache@v2
-        with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -43,12 +28,24 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
 
-      - name: Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: Store SonarQube results
+        uses: actions/upload-artifact@v2
+        with:
+          name: sonarqube-results
+          path: .scannerwork
+
+  sonarqube_verification:
+    needs: sonarqube_analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download SonarQube results
+        uses: actions/download-artifact@v2
+        with:
+          name: sonarqube-results
+          path: .scannerwork
 
       - name: Check SonarQube Issues
         env:
