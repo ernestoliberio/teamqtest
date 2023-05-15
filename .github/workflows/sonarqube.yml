@@ -35,11 +35,12 @@ jobs:
       - name: Check if SonarQube Issues
         id: check-sonarqube-issues
         run: |
-          jq -e '.issues | length > 0' issues.json > /dev/null 2>&1 || echo "No issues"
+          cat issues.json | jq -e 'if .issues then (if .issues | length > 0 then true else false end) else false end' > /dev/null
+          echo "::set-output name=hasIssues::$?"
 
       - name: Block Pull Request if SonarQube Issues
         run: |
-          if [ "${{ steps.check-sonarqube-issues.outputs.hasIssues }}" = "0" ]; then
+          if [ "${{ steps.check-sonarqube-issues.outputs.hasIssues }}" = "true" ]; then
             echo "There are SonarQube issues. Blocking pull request."
             exit 1
           fi
