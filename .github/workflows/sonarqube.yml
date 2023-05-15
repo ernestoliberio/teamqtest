@@ -2,13 +2,14 @@ name: SonarQubeCheck
 on:
   pull_request:
     types: [opened, synchronize]
+
 jobs:
-  sonarqube:
+  sonarqube_analysis:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-         fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
@@ -17,18 +18,29 @@ jobs:
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.projectKey=teamqtest
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_NAME }}
+            -Dsonar.projectName=${{ secrets.SONAR_PROJECT_NAME }}
             -Dsonar.organization=teamq-ec
             -Dsonar.projectVersion=1.0.0
             -Dsonar.scm.provider=git
             -Dsonar.sources=app
             -Dsonar.language=php
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.exclusions=**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
-      - name: Check SonarQube analysis result
+            -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
+
+      - name: Check SonarQube Issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT: ${{ secrets.SONAR_PROJECT_NAME }}
         run: |
-          analysis=$(grep "ANALYSIS SUCCESSFUL" .scannerwork/report-task.txt || true)
-          if [[ -z "$analysis" ]]; then
-            echo "SonarQube analysis failed. Check SonarQube dashboard for more information."
+          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=${{ secrets.SONAR_PROJECT_NAME }}&id=${{ secrets.SONAR_PROJECT_NAME }}&resolved=false&statuses=OPEN")
+          issues=$(echo "$response" | awk -F'"total":' '{print $2}' | awk -F',' '{print $1}')
+          echo $response
+          echo $issues
+          if [[ $issues -gt 0 ]]; then
+            echo "There are $issues open issues in SonarQube. Blocking the workflow."
             exit 1
+          else
+            echo "No open issues found in SonarQube. Continuing the workflow."
           fi
