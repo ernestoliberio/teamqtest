@@ -32,7 +32,6 @@ class PostController extends Controller
     public function store(StorePostRequest $request): PostResource
     {
         $posts = Post::create($request->all());
-
         return new PostResource($posts);
     }
 
