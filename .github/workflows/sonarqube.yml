@@ -36,8 +36,7 @@ jobs:
       - name: Check if SonarQube Issues
         id: check-sonarqube-issues
         run: |
-          jq -e 'if .issues then .issues | length > 0 else false end' issues.json > /dev/null
-          echo "::set-output name=hasIssues::$?"
+          jq -e '.issues | length > 0' issues.json > /dev/null 2>&1 || echo "No issues"
 
       - name: Block Pull Request if SonarQube Issues
         run: |
