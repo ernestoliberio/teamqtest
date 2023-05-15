@@ -15,11 +15,12 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT: ${{ secrets.SONAR_PROJECT }}
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.projectKey=teamqtest
-            -Dsonar.projectName=teamqtest
+            -Dsonar.projectKey=$SONAR_PROJECT
+            -Dsonar.projectName=$SONAR_PROJECT
             -Dsonar.organization=teamq-ec
             -Dsonar.projectVersion=1.0.0
             -Dsonar.scm.provider=git
@@ -28,33 +29,13 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
 
-      - name: Store SonarQube results
-        uses: actions/upload-artifact@v3
-        with:
-          name: sonarqube-results
-          path: .scannerwork
-
-  sonarqube_verification:
-    needs: sonarqube_analysis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download SonarQube results
-        uses: actions/download-artifact@v3
-        with:
-          name: sonarqube-results
-          path: .scannerwork
-
       - name: Check SonarQube Issues
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT: ${{ secrets.SONAR_PROJECT }}
         run: |
-          echo $SONAR_TOKEN
-          echo $SONAR_HOST_URL
-          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=teamqtest&id=teamqtest&resolved=false&statuses=OPEN")
+          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=$SONAR_PROJECT&id=$SONAR_PROJECT&resolved=false&statuses=OPEN")
           issues=$(echo "$response" | awk -F'"total":' '{print $2}' | awk -F',' '{print $1}')
           if [[ $issues -gt 0 ]]; then
             echo "There are $issues open issues in SonarQube. Blocking the workflow."
