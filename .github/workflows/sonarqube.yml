@@ -29,7 +29,7 @@ jobs:
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
 
       - name: Store SonarQube results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: sonarqube-results
           path: .scannerwork
@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download SonarQube results
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: sonarqube-results
           path: .scannerwork
