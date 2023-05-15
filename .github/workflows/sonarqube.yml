@@ -34,7 +34,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_PROJECT: ${{ secrets.SONAR_PROJECT_NAME }}
         run: |
-          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=SONAR_PROJECT_NAME&id=SONAR_PROJECT_NAME&resolved=false&statuses=OPEN")
+          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=$SONAR_PROJECT_NAME&id=$SONAR_PROJECT_NAME&resolved=false&statuses=OPEN")
           issues=$(echo "$response" | awk -F'"total":' '{print $2}' | awk -F',' '{print $1}')
           if [[ $issues -gt 0 ]]; then
             echo "There are $issues open issues in SonarQube. Blocking the workflow."
