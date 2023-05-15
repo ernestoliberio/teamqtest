@@ -31,7 +31,7 @@ jobs:
       - name: Get SonarQube Issues
         id: sonarqube-issues
         run: |
-          curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }/api/issues/search?componentKeys=teamqtest&statuses=OPEN" --output issues.json
+          curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&statuses=OPEN" --output issues.json
 
       - name: Check if SonarQube Issues
         id: check-sonarqube-issues
