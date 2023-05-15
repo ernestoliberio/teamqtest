@@ -16,10 +16,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectKey: teamqtest
-          projectName: teamqtest
           projectBaseDir: .
           args: >
             -Dsonar.projectKey=teamqtest
+            -Dsonar.projectName=teamqtest
             -Dsonar.organization=teamq-ec
             -Dsonar.projectVersion=1.0.0
             -Dsonar.scm.provider=git
@@ -31,12 +31,12 @@ jobs:
       - name: Get SonarQube Issues
         id: sonarqube-issues
         run: |
-          curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&statuses=OPEN" > issues.json
-          echo "::set-output name=hasIssues::$(jq '.issues | length > 0' issues.json)"
+            curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&statuses=OPEN" > issues.json
+            echo "::set-output name=hasIssues::$(jq '.issues | length > 0' issues.json)"
 
       - name: Block Pull Request if SonarQube Issues
         run: |
-          if [ "${{ steps.sonarqube-issues.outputs.hasIssues }}" = "true" ]; then
-            echo "There are SonarQube issues. Blocking pull request."
-            exit 1
-          fi
+              if [ "${{ steps.sonarqube-issues.outputs.hasIssues }}" = "true" ]; then
+                echo "There are SonarQube issues. Blocking pull request."
+                exit 1
+              fi
