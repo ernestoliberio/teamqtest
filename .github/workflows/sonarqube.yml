@@ -16,6 +16,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectKey: teamqtest
+          projectName: teamqtest
           projectBaseDir: .
           args: >
             -Dsonar.projectKey=teamqtest
@@ -27,20 +28,15 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
 
-      - name: Check SonarQube Quality Gate
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectKey: teamqtest
-          waitForQualityGate: 'true'
-
-      - name: Check if Quality Gate passed
+      - name: Get SonarQube Issues
+        id: sonarqube-issues
         run: |
-          if [ ${{ steps.sonarqube-quality-gate.outputs.status }} != 'passed' ]; then
-            echo "Quality Gate check failed. Blocking pull request. SonarQube analysis failed. Check SonarQube dashboard for more information"
+          curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&statuses=OPEN" > issues.json
+          echo "::set-output name=hasIssues::$(jq '.issues | length > 0' issues.json)"
+
+      - name: Block Pull Request if SonarQube Issues
+        run: |
+          if [ "${{ steps.sonarqube-issues.outputs.hasIssues }}" = "true" ]; then
+            echo "There are SonarQube issues. Blocking pull request."
             exit 1
           fi
