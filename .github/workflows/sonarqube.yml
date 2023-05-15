@@ -6,8 +6,6 @@ jobs:
   sonarqube:
     runs-on: ubuntu-latest
     steps:
-      - name: Install jq
-        run: sudo apt-get install -y jq
       - uses: actions/checkout@v3
         with:
          fetch-depth: 0
@@ -40,10 +38,11 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          issues=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: '${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&s=CREATION_DATE&resolved=false&ps=1' | jq '.total')
+          response=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&s=CREATION_DATE&resolved=false&ps=1")
+          issues=$(echo "$response" | grep -oP '"total":\s*\K[0-9]+')
           if [[ $issues -gt 0 ]]; then
-            echo "There are $issues open issues in SonarQube. Blocking the workflow."
-            exit 1
+           echo "There are $issues open issues in SonarQube. Blocking the workflow."
+           exit 1
           else
-            echo "No open issues found in SonarQube. Continuing the workflow."
+           echo "No open issues found in SonarQube. Continuing the workflow."
           fi
