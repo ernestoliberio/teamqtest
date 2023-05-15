@@ -1,0 +1,34 @@
+name: SonarQubeCheck
+on:
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+         fetch-depth: 0
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=teamqtest
+            -Dsonar.organization=teamq-ec
+            -Dsonar.projectVersion=1.0.0
+            -Dsonar.scm.provider=git
+            -Dsonar.sources=app
+            -Dsonar.language=php
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.exclusions=**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
+      - name: Check SonarQube analysis result
+        run: |
+          analysis=$(grep "ANALYSIS SUCCESSFUL" .scannerwork/report-task.txt || true)
+          if [[ -z "$analysis" ]]; then
+            echo "SonarQube analysis failed. Check SonarQube dashboard for more information."
+            exit 1
+          fi
