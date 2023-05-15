@@ -27,15 +27,16 @@ jobs:
             -Dsonar.language=php
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
+
       - name: Get SonarQube Issues
         id: sonarqube-issues
         run: |
-            curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&statuses=OPEN" --output issues.json
+          curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X GET "${{ secrets.SONAR_HOST_URL }/api/issues/search?componentKeys=teamqtest&statuses=OPEN" --output issues.json
 
       - name: Check if SonarQube Issues
         id: check-sonarqube-issues
         run: |
-          jq -e '.issues | length > 0' issues.json > /dev/null
+          jq -e 'if .issues then .issues | length > 0 else false end' issues.json > /dev/null
           echo "::set-output name=hasIssues::$?"
 
       - name: Block Pull Request if SonarQube Issues
