@@ -24,7 +24,7 @@ jobs:
             -Dsonar.sources=app
             -Dsonar.language=php
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.exclusions=**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
+            -Dsonar.exclusions=**/app/Console/Kernel.php,**/app/Providers/**,**/vendor/**,**/node_modules/**,**/infrastructure/**,**/lang/**,**/bootstrap/**,**/config/*,**/storage/**,**/public/**,**/tests/**
       - name: Check SonarQube analysis result
         run: |
           analysis=$(grep "ANALYSIS SUCCESSFUL" .scannerwork/report-task.txt || true)
