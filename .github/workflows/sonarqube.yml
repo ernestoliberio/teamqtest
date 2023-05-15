@@ -52,9 +52,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          response=$(curl -s -u sqp_584aedfbdd68b7ab62226ac11758e4d21f06251d: "https://sonarqube.teamq.biz/api/issues/search?componentKeys=teamqtest&id=teamqtest&resolved=false")
+          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=teamqtest&id=teamqtest&resolved=false&statuses=OPEN")
           issues=$(echo "$response" | awk -F'"total":' '{print $2}' | awk -F',' '{print $1}')
-          echo "Response: $response"
           if [[ $issues -gt 0 ]]; then
             echo "There are $issues open issues in SonarQube. Blocking the workflow."
             exit 1
