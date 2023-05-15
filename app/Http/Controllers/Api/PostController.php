@@ -32,6 +32,7 @@ class PostController extends Controller
     public function store(StorePostRequest $request): PostResource
     {
         $posts = Post::create($request->all());
+        $dat=45;
         return new PostResource($posts);
     }
 
@@ -43,6 +44,9 @@ class PostController extends Controller
      */
     public function show(Post $post): PostResource
     {
+        /*
+         * $value=$post->id;
+         * */
         return new PostResource($post);
     }
 
