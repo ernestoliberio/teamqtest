@@ -50,8 +50,9 @@ jobs:
       - name: Check SonarQube Issues
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          response=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&id=teamqtest&resolved=false&statuses=OPEN")
+          response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/issues/search?componentKeys=teamqtest&id=teamqtest&resolved=false&statuses=OPEN")
           issues=$(echo "$response" | awk -F'"total":' '{print $2}' | awk -F',' '{print $1}')
           if [[ $issues -gt 0 ]]; then
             echo "There are $issues open issues in SonarQube. Blocking the workflow."
