@@ -38,8 +38,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          response=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&s=CREATION_DATE&resolved=false&ps=1")
-          issues=$(echo "$response" | grep -oP '"total":\s*\K[0-9]+')
+          response=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=teamqtest&id=teamqtest&resolved=false")
+          issues=$(echo "$response" | awk -F'"total":' '{print $2}' | awk -F',' '{print $1}')
           if [[ $issues -gt 0 ]]; then
            echo "There are $issues open issues in SonarQube. Blocking the workflow."
            exit 1
